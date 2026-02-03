@@ -1,10 +1,9 @@
 import { processMarkDownFiles } from "../utils/helpers";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { pinecone } from "../utils/pinecone-client";
+import { getCompatibleIndex } from "../utils/pinecone-client";
 import { PINECONE_INDEX_NAME } from "../config/pinecone";
 import { OpenAIEmbeddings } from "langchain/embeddings";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
-import { PineconeClient } from "@pinecone-database/pinecone";
 
 /* Name of directory to retrieve files from. You can change this as required */
 const directoryPath = "notion";
@@ -31,13 +30,8 @@ const run = async () => {
       temperature: process.env.AI_TEMP,
     });
 
-    const client = new PineconeClient();
-    await client.init({
-      apiKey: process.env.PINECONE_API_KEY ?? "",
-      environment: process.env.PINECONE_ENVIRONMENT ?? "",
-    });
-    const pineconeIndex = client.Index("hub-index");
-    const index = pinecone.Index(PINECONE_INDEX_NAME); //change to your own index name
+    const pineconeIndex = getCompatibleIndex("hub-index");
+    const index = getCompatibleIndex(PINECONE_INDEX_NAME); //change to your own index name
 
     console.log("Index done");
     const storeRes = await PineconeStore.fromDocuments(docs, embeddings, {

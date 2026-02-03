@@ -1,24 +1,41 @@
-import { PineconeClient } from "@pinecone-database/pinecone";
+import { Pinecone } from "@pinecone-database/pinecone";
 
-console.log(process.env.PINECONE_ENVIRONMENT, "==");
-if (!process.env.PINECONE_ENVIRONMENT || !process.env.PINECONE_API_KEY) {
-  throw new Error("Pinecone environment or api key vars missing");
+if (!process.env.PINECONE_API_KEY) {
+  throw new Error("Pinecone api key var missing");
 }
 
-async function initPinecone() {
-  try {
-    const pinecone = new PineconeClient();
+export const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY,
+});
 
-    await pinecone.init({
-      apiKey: process.env.PINECONE_API_KEY ?? "",
-      environment: process.env.PINECONE_ENVIRONMENT ?? "",
-    });
+export const getCompatibleIndex = (indexName: string) => {
+  const index = pinecone.index(indexName);
 
-    return pinecone;
-  } catch (error) {
-    console.log("error", error);
-    throw new Error("Failed to initialize Pinecone Client");
-  }
-}
-
-export const pinecone = await initPinecone();
+  return new Proxy(index, {
+    get(target, prop, receiver) {
+      if (prop === "query") {
+        return async (args: any) => {
+          console.log("Proxy query args:", JSON.stringify(args));
+          if (args && args.queryRequest) {
+            const { queryRequest } = args;
+            return target.query({
+              ...queryRequest,
+              topK: queryRequest.topK,
+            });
+          }
+          return target.query(args);
+        };
+      }
+      if (prop === "upsert") {
+        return async (args: any) => {
+          console.log("Proxy upsert args:", JSON.stringify(args));
+          if (args && args.upsertRequest) {
+            return target.upsert(args.upsertRequest.vectors);
+          }
+          return target.upsert(args);
+        };
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+};

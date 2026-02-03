@@ -1,10 +1,9 @@
 import { processMarkDownFiles, processTextFiles } from "../utils/helpers";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { pinecone } from "../utils/pinecone-client";
+import { getCompatibleIndex } from "../utils/pinecone-client";
 import { PINECONE_INDEX_NAME } from "../config/pinecone";
 import { OpenAIEmbeddings } from "langchain/embeddings";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
-import { PineconeClient } from "@pinecone-database/pinecone";
 import { readText } from "../utils/read";
 import { Document } from "langchain/document";
 import fs from "fs";
@@ -36,14 +35,9 @@ const run = async () => {
       openAIApiKey: process.env.OPENAI_API_KEY,
       temperature: process.env.AI_TEMP,
     });
-    
-    const client = new PineconeClient();
-    await client.init({
-      apiKey: process.env.PINECONE_API_KEY ?? "",
-      environment: process.env.PINECONE_ENVIRONMENT ?? "",
-    });
-    const pineconeIndex = client.Index(PINECONE_INDEX_NAME);
-    const index = pinecone.Index(PINECONE_INDEX_NAME); //change to your own index name
+
+    const pineconeIndex = getCompatibleIndex(PINECONE_INDEX_NAME);
+    const index = getCompatibleIndex(PINECONE_INDEX_NAME); //change to your own index name
 
     console.log("Index done");
     const storeRes = await PineconeStore.fromDocuments(docs, embeddings, {

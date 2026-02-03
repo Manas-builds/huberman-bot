@@ -1,17 +1,12 @@
-import { PineconeClient } from "@pinecone-database/pinecone";
 import * as dotenv from "dotenv";
 import { Document } from "langchain/document";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
+import { getCompatibleIndex } from "../utils/pinecone-client";
 
 dotenv.config();
 (async () => {
-  const client = new PineconeClient();
-  let clientInit = await client.init({
-    apiKey: process.env.PINECONE_API_KEY ?? "",
-    environment: process.env.PINECONE_ENVIRONMENT ?? "",
-  });
-  const pineconeIndex = client.Index("hub-index");
+  const pineconeIndex = getCompatibleIndex("hub-index");
 
   const docs = [
     new Document({

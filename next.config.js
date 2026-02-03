@@ -7,9 +7,6 @@ const withPWA = require("next-pwa")({
 });
 
 const nextConfig = withPWA({
-  experimental: {
-    modern: true,
-  },
   webpack(config, { isServer, dev, webpack }) {
     config.plugins.push(
       // Remove node: from import specifiers, because Next.js does not yet support node: scheme

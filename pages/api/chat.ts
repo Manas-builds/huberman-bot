@@ -4,7 +4,7 @@ import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 
 import { openai } from "../../utils/openai-client";
-import { pinecone } from "../../utils/pinecone-client";
+import { getCompatibleIndex } from "../../utils/pinecone-client";
 import { PINECONE_INDEX_NAME } from "../../config/pinecone";
 import { ConversationalRetrievalQAChain } from "langchain/chains";
 
@@ -29,7 +29,7 @@ export default async function handler(
     // OpenAI recommends replacing newlines with spaces for best results
     const sanitizedQuestion = question.trim().replaceAll("\n", " ");
 
-    const index = pinecone.Index(PINECONE_INDEX_NAME);
+    const index = getCompatibleIndex(PINECONE_INDEX_NAME);
     /* create vectorstore*/
     const vectorStore = await PineconeStore.fromExistingIndex(
       new OpenAIEmbeddings({
@@ -88,6 +88,6 @@ export default async function handler(
       error: error.message,
     });
 
-    res.status(error.status).json({ error: error.message });
+    res.status(error.status || 500).json({ error: error.message || "Internal Server Error" });
   }
 }

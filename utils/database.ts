@@ -1,7 +1,5 @@
-import { doc } from "@firebase/firestore"; // for creating a pointer to our Document
+import { doc, collection, setDoc } from "firebase/firestore";
 import { firestore } from "../firebase";
-import { collection } from "@firebase/firestore";
-import { setDoc } from "firebase/firestore"; // for adding the Document to Collection
 
 export interface User {
   email: string;
