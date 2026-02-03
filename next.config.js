@@ -7,6 +7,7 @@ const withPWA = require("next-pwa")({
 });
 
 const nextConfig = withPWA({
+  turbopack: {},
   webpack(config, { isServer, dev, webpack }) {
     config.plugins.push(
       // Remove node: from import specifiers, because Next.js does not yet support node: scheme
@@ -17,7 +18,6 @@ const nextConfig = withPWA({
     );
     // Since Webpack 5 doesn't enable WebAssembly by default, we should do it manually
     config.experiments = {
-      ...config.experiments,
       asyncWebAssembly: true,
       topLevelAwait: true,
     };
